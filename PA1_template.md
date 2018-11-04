@@ -5,7 +5,7 @@ output:
     keep_md: true
 ---
 **Author**        : Philip Camp  
-**Date Created**  :`r Sys.time()`
+**Date Created**  :2018-11-04 13:34:43
 
 The following is a report generated as a part of the Coursera Reproducible Research first course project.  
 
@@ -58,7 +58,8 @@ dataset.
 ## 1.0 Loading and preprocessing the data
 
 ### Load necessary packages
-```{r echo = TRUE, message = FALSE}
+
+```r
 # Library packages
 library(plyr)
 library(dplyr)
@@ -67,7 +68,8 @@ library(ggplot2)
 
 
 ### Code for reading in the dataset and/or processing the data
-```{r echo = TRUE}
+
+```r
 # Set data download location and file name
 dataURL   <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 dataName  <- "activity.csv"
@@ -84,7 +86,6 @@ if(!(dataName %in% list.files())){
 
 # Load data
 activityData    <- read.table("activity.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
-
 ```
 
 
@@ -98,7 +99,8 @@ For this part of the assignment, you can ignore the missing values in the datase
 2. Calculate and report the mean and median of the total number of steps taken per day
 
 ### Histogram of the total number of steps taken each day
-```{r echo = TRUE}
+
+```r
 # Calculate the total number of steps taken per day
 aggData <- ddply(activityData, ~ date, summarize, sumSteps = sum(steps, na.rm = TRUE))  
 
@@ -107,11 +109,25 @@ hist(aggData$sumSteps, main = "Histogram of Total Number of Steps by Day",
      xlab = "Number of Steps", col = "grey")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 ### Mean and median number of steps taken each day
-```{r echo = TRUE}
+
+```r
 # Echo the mean and median total number of steps taken per day
 mean(aggData$sumSteps, na.rm = TRUE)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 median(aggData$sumSteps, na.rm = TRUE)
+```
+
+```
+## [1] 10395
 ```
 
 
@@ -121,16 +137,24 @@ median(aggData$sumSteps, na.rm = TRUE)
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 ### Time series plot of the average number of steps taken
-```{r echo = TRUE}
+
+```r
 aggData2     <- ddply(activityData, ~ interval, summarize, meanSteps = mean(steps, na.rm = TRUE))
 plot(aggData2$interval, aggData2$meanSteps, type = "l", ylab = "Mean # of Steps", xlab = "5-minute interval",
      main = " Time Series of number of steps across 5-minute intervals",
      lwd = 2, col = "lightblue")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
 ### The 5-minute interval that, on average, contains the maximum number of steps
-```{r echo = TRUE}
+
+```r
 aggData2[which.max(aggData2$meanSteps), "interval"]
+```
+
+```
+## [1] 835
 ```
 
 ## 4.0 Imputing missing values
@@ -141,7 +165,8 @@ aggData2[which.max(aggData2$meanSteps), "interval"]
 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 ### Calculate and report the total number of missing values in the dataset
-```{r echo = TRUE}
+
+```r
 # Create an NA index
 naIndex <- which(is.na(activityData$steps))
 
@@ -149,8 +174,13 @@ naIndex <- which(is.na(activityData$steps))
 length(naIndex)
 ```
 
+```
+## [1] 2304
+```
+
 ### Code to describe and show a strategy for imputing missing data
-```{r echo = TRUE}
+
+```r
 # Create an index for intervals with NAs
 intervalSeq <- sort(unique(activityData[naIndex,]$interval))
 
@@ -160,11 +190,11 @@ for(i in seq_along(intervalSeq)){
   # Replace the NAs within each interval by its mean
   activityData[naIndex[which(activityData[naIndex,]$interval == intervalSeq[i])], "steps"] <- aggData2[i, "meanSteps"]
 }
-
 ```
 
 ### Histogram of the total number of steps taken each day after missing values are imputed
-```{r echo = TRUE}
+
+```r
 # Aggregate data by day (date) and sum the steps
 aggData3 <- ddply(activityData, ~ date, summarize, sumSteps = sum(steps, na.rm = TRUE))  
 
@@ -173,12 +203,26 @@ hist(aggData3$sumSteps, main = "Histogram of Total Number of Steps by Day",
      xlab = "Number of Steps", col = "lightblue")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
 ### Do these values differ from the estimates from the first part of the assignment? 
 What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r echo = TRUE}
+
+```r
 mean(aggData3$sumSteps, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(aggData3$sumSteps, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
 ```
 
 1. The values between before and after imputing do differ.
@@ -191,8 +235,8 @@ median(aggData3$sumSteps, na.rm = TRUE)
 2.0 Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
 ### Create  factor variable indicating weekday or weekend
-```{r echo = TRUE}
 
+```r
 # Create a weekday vector
 weekdays <- c("Monday", "Tuesday", "Wednesday", "Thursday", 
               "Friday")
@@ -202,7 +246,8 @@ activityData$DayOfWeek <- as.factor(ifelse(is.element(weekdays(as.Date(activityD
 ```
 
 ### Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
-```{r echo = TRUE}
+
+```r
 # Aggregate data by interval and Day of the week, and summarize data by mean steps
 aggData4  <- ddply(activityData, .(interval, DayOfWeek), summarize, meanSteps = mean(steps))
 
@@ -210,5 +255,7 @@ aggData4  <- ddply(activityData, .(interval, DayOfWeek), summarize, meanSteps = 
 ggplot(aggData4, aes(x = interval, y = meanSteps)) + geom_line() + facet_wrap(~DayOfWeek, ncol = 1) +
   xlab("Mean # of Steps") + ylab("5-minute Interval")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 The center of the data shifts right on weekends with the average number of steps increasing.
